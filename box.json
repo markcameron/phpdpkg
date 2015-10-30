@@ -1,0 +1,21 @@
+{
+  "alias": "phpdpkg.phar",
+  "chmod": "0755",
+  "directories": [
+    "src",
+    "vendor"
+  ],
+  "files": [
+    "LICENSE"
+  ],
+  "finder": [
+    {
+      "name": "*.php",
+      "exclude": ["Tests"],
+      "in": "vendor"
+    }
+  ],
+  "main": "bin/phpdpkg",
+  "output": "phpdpkg.phar",
+  "stub": true
+}

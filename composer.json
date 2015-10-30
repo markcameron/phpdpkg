@@ -1,0 +1,15 @@
+{
+  "name": "markcameron/phpdpkg",
+  "description": "PHP debian packager.",
+  "keywords": ["phpdpkg", "debian", "package"],
+  "license": "MIT",
+  "type": "library",
+  "require": {
+    "symfony/console": "^2.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Phpdpkg\\": "src/"
+    }
+  }
+}
