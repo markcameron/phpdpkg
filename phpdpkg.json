@@ -1,0 +1,10 @@
+{
+  "directory": "test",
+  "control": [
+    "package": "Test Package",
+    "version": 1.0,
+    "architecture": "all",
+    "maintainer": "Mark Cameron <mark.cameron@devfactory.ch>",
+    "description": "Website made into a package",
+  ]
+}

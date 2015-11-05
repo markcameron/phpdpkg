@@ -3,9 +3,14 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Phpdpkg\PhpdpkgCommand;
-use Symfony\Component\Console\Application;
+/**
+ * The project (or Phar) base path.
+ *
+ * @var string
+ */
+define('BASE_PATH', dirname(__DIR__));
 
-$application = new Application('Phpdpkg', '0.1-dev');
-$application->add(new Phpdpkg\PhpdpkgCommand());
+use Phpdpkg\Tool\PhpdpkgApplication;
+
+$application = new PhpdpkgApplication('Phpdpkg', '0.1-dev');
 $application->run();
