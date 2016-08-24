@@ -4,6 +4,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 
 use Phpdpkg\PhpdpkgCommand;
+use Phpdpkg\Helper\ConfigurationHelper;
 
 class PhpdpkgApplication extends Application {
 
@@ -44,6 +45,16 @@ class PhpdpkgApplication extends Application {
     $inputDefinition->setArguments();
 
     return $inputDefinition;
+  }
+
+  /**
+   * @override
+   */
+  protected function getDefaultHelperSet() {
+    $helperSet = parent::getDefaultHelperSet();
+    $helperSet->set(new ConfigurationHelper());
+
+    return $helperSet;
   }
 
 }

@@ -1,6 +1,7 @@
 <?php namespace Phpdpkg;
 
-use Symfony\Component\Console\Command\Command;
+use Phpdpkg\Configurable;
+
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -11,19 +12,16 @@ use Symfony\Component\Finder\Finder;
 
 use Herrera\Json\Json;
 
-class PhpdpkgCommand extends Command {
+class PhpdpkgCommand extends Configurable {
 
   protected $build_number;
+
+  protected $config;
 
   protected function configure() {
     $this
       ->setName('build')
       ->setDescription('Make a debian package')
-      ->addArgument(
-        'name',
-        InputArgument::OPTIONAL,
-        'The name of the package to create'
-      )
       ->addOption(
         'build_number',
         0,
@@ -34,6 +32,8 @@ class PhpdpkgCommand extends Command {
   }
 
   protected function execute(InputInterface $input, OutputInterface $output) {
+//    $this->config = $this->getConfig($input);
+
     $output->writeln('Building package...');
 
     $this->build_number = $input->getOption('build_number');
@@ -49,16 +49,47 @@ class PhpdpkgCommand extends Command {
     $filesystem->remove($copy_directory);
     $filesystem->mkdir($copy_directory, 0755);
 
-    $files = Finder::create()
-      ->files()
-      ->in($config->copy_contents_of);
+    if (!empty($config->copy_contents_of)) {
+      $files = Finder::create()
+                     ->files()
+                     ->in($config->copy_contents_of);
 
-    foreach ($files as $file) {
-      $filesystem->copy($file, $copy_directory . '/' . $file->getRelativePathname());
+      foreach ($files as $file) {
+        $filesystem->copy($file, $copy_directory . '/' . $file->getRelativePathname());
+//        $filesystem->chown($copy_directory . '/' . $file->getRelativePathname(), $config->file_owner, true);
+      }
+    }
+
+    if (!empty($config->copy_directories)) {
+      $files = Finder::create()
+                     ->files()
+                     ->in($config->copy_directories);
+
+      foreach ($files as $file) {
+        $output->writeln($copy_directory . $file->getPath() . '/' . $file->getBaseName());
+        $filesystem->copy($file, $copy_directory . $file->getPath() . '/' . $file->getBaseName());
+//        $filesystem->chown($copy_directory . $file->getPath() . '/' . $file->getBaseName(), $config->file_owner, true);
+      }
+    }
+
+    if (!empty($config->copy_files)) {
+      foreach ($config->copy_files as $file) {
+        $filesystem->copy($file, $copy_directory . $file);
+//        var_dump(is_file($copy_directory . $file));
+//        var_dump(chown($copy_directory . $file, $config->file_owner));
+//        $filesystem->chown($copy_directory . $file, $config->file_owner);
+      }
+    }
+
+    if (!empty($config->file_owner)) {
+      $output->writeln($config->file_owner);
+      $output->writeln($copy_directory);
+//      $filesystem->chown($copy_directory, $config->file_owner, true);
     }
 
     // Generate Debian Package file name with version
     $package_filename = implode('_', [$config->name, $config->version .'.'. $this->build_number, $config->control->architecture]) . '.deb';
+    $config->control->version .= '.'. $this->build_number;
 
     // Generate control file
     $control_file = '/DEBIAN/control';

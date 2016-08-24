@@ -4,7 +4,6 @@
   "build_directory": "target",
   "package_base_directory": "/var/www/package",
   "copy_contents_of": [
-    "directory"
   ],
   "control": {
     "package": "Package",
