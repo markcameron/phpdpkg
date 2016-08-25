@@ -52,43 +52,42 @@ class PhpdpkgCommand extends Configurable {
     if (!empty($config->copy_contents_of)) {
       $files = Finder::create()
                      ->files()
+                     ->ignoreDotFiles(FALSE)
                      ->in($config->copy_contents_of);
 
       foreach ($files as $file) {
         $filesystem->copy($file, $copy_directory . '/' . $file->getRelativePathname());
-//        $filesystem->chown($copy_directory . '/' . $file->getRelativePathname(), $config->file_owner, true);
       }
     }
 
     if (!empty($config->copy_directories)) {
       $files = Finder::create()
                      ->files()
+                     ->ignoreDotFiles(FALSE)
                      ->in($config->copy_directories);
 
       foreach ($files as $file) {
         $output->writeln($copy_directory . $file->getPath() . '/' . $file->getBaseName());
         $filesystem->copy($file, $copy_directory . $file->getPath() . '/' . $file->getBaseName());
-//        $filesystem->chown($copy_directory . $file->getPath() . '/' . $file->getBaseName(), $config->file_owner, true);
       }
     }
 
     if (!empty($config->copy_files)) {
       foreach ($config->copy_files as $file) {
         $filesystem->copy($file, $copy_directory . $file);
-//        var_dump(is_file($copy_directory . $file));
-//        var_dump(chown($copy_directory . $file, $config->file_owner));
-//        $filesystem->chown($copy_directory . $file, $config->file_owner);
       }
     }
 
     if (!empty($config->file_owner)) {
-      $output->writeln($config->file_owner);
-      $output->writeln($copy_directory);
-//      $filesystem->chown($copy_directory, $config->file_owner, true);
+      $filesystem->chown($config->build_directory, $config->file_owner, true);
+      $filesystem->chgrp($config->build_directory, $config->file_owner, true);
     }
 
     // Generate Debian Package file name with version
     $package_filename = implode('_', [$config->name, $config->version .'.'. $this->build_number, $config->control->architecture]) . '.deb';
+    if (!empty($config->deb_output_directory)) {
+      $package_filename = $config->deb_output_directory . '/' . $package_filename;
+    }
     $config->control->version .= '.'. $this->build_number;
 
     // Generate control file
