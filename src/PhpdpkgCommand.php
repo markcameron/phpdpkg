@@ -28,6 +28,12 @@ class PhpdpkgCommand extends Configurable {
         InputOption::VALUE_OPTIONAL,
         'If set, the version number will have this appended as a patch in the version number'
       )
+      ->addOption(
+        'config-file',
+        0,
+        InputOption::VALUE_OPTIONAL,
+        'If set, use different JSON config file instead of ./phpdpkg.json'
+      )
       ;
   }
 
@@ -39,9 +45,23 @@ class PhpdpkgCommand extends Configurable {
     $this->build_number = $input->getOption('build_number');
 
     // Prepare config
-    $config_file_path = realpath('phpdpkg.json');
+//    if ($input->hasOption('config-file')) {
+//      $output->writeln('With diff config file');
+//      $output->writeln($input->getOption('config-file'));
+//      $config_file_path = realpath($input->getOption('config-file'));
+//    }
+//    else {
+      $output->writeln('Default config');
+      $output->writeln(realpath('phpdpkg.json'));
+      $config_file_path = realpath('phpdpkg.json');
+//    }
     $json = new Json();
+
+    $output->writeln($config_file_path);
+    $output->writeln(file_get_contents($config_file_path));
+
     $config = $json->decode(file_get_contents($config_file_path));
+    var_dump($config);
 
     // Prepare directory with files for package
     $filesystem = new Filesystem();
@@ -78,9 +98,12 @@ class PhpdpkgCommand extends Configurable {
       }
     }
 
+    $filesystem->mkdir($copy_directory . '/version', 0774);
+    file_put_contents ($copy_directory . '/version/' . $config->control->package . '.version', $this->build_number);
+
     if (!empty($config->file_owner)) {
       $filesystem->chown($config->build_directory, $config->file_owner, true);
-      $filesystem->chgrp($config->build_directory, $config->file_owner, true);
+      $filesystem->chgrp($config->build_directory, !empty($config->file_owner_group) ? $config->file_owner_group : $config->file_owner, true);
     }
 
     // Generate Debian Package file name with version
@@ -89,6 +112,7 @@ class PhpdpkgCommand extends Configurable {
       $package_filename = $config->deb_output_directory . '/' . $package_filename;
     }
     $config->control->version .= '.'. $this->build_number;
+
 
     // Generate control file
     $control_file = '/DEBIAN/control';
